@@ -1,4 +1,12 @@
-import { getCurrentInstance, h, ref, computed, watchEffect, unref } from 'vue'
+import {
+  getCurrentInstance,
+  h,
+  ref,
+  computed,
+  watchEffect,
+  unref,
+  Comment,
+} from 'vue'
 import { debugWarn } from '@element-plus/utils'
 import { useNamespace } from '@element-plus/hooks'
 import {
@@ -127,7 +135,11 @@ function useRender<T>(
       column.renderCell = (data) => {
         let children = null
         if (slots.default) {
-          children = slots.default(data)
+          const vnodes = slots.default(data)
+          // 如果默认插槽第一层级的子节点都是注释节点的话 则使用内部的默认渲染
+          children = vnodes.every((v) => v.type === Comment)
+            ? originRenderCell(data)
+            : vnodes
         } else {
           children = originRenderCell(data)
         }
